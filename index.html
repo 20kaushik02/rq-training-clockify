@@ -13,23 +13,78 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root">
-        <div class="topnav"></div>
-        <div class="sidenav"></div>
-        <div class="mainArea">
-            <div class="timeTracker">
-                <div class="timeTracker__entryDetails">
-                    <input type="text" class="entryDetails__description"/>
-                    <select class="entryDetails__project" name="" id=""></select>
-                </div>
-                <div class="timeTracker__entryActions">
-                    <div class="entryActions__task"></div>
-                    <div class="entryActions__billable"></div>
-                    <div class="entryActions__currentTime"></div>
-                    <div class="entryActions__timectl"></div>
-                    <div class="entryActions__timediscard"></div>
-                </div>
-            </div>
+      <div class="topnav"></div>
+      <div class="sidenav"></div>
+      <div class="mainArea">
+        <div class="timeTracker">
+          <div class="timeTracker__entryDetails">
+            <input
+              type="text"
+              placeholder="What are you working on?"
+              class="entryDetails__description"
+            />
+            <select class="entryDetails__projectSelect" name="" id="">
+              <option class="entryDetails__project" value=""></option>
+              <option class="entryDetails__newProject" value="">
+                Create new project
+              </option>
+            </select>
+          </div>
+          <div class="timeTracker__entryActions">
+            <div class="entryActions__billable"></div>
+            <div class="entryActions__currentTime"></div>
+            <div class="entryActions__timectl"></div>
+            <div class="entryActions__timediscard"></div>
+          </div>
         </div>
+        <div class="timeEntryGroup timeEntryGroup--day">
+          <div class="timeEntryGroup__header">
+            <p class="groupHeader__name"></p>
+            <p class="groupHeader__totaltime"></p>
+          </div>
+          <div class="timeEntryGroup__entries">
+            <div class="entries__entry">
+              <div class="entry__records">
+                <div class="entry__mainrecord">
+                  <div class="mainrecord__count"></div>
+                  <div class="mainrecord__record entry__record">
+                    <input type="text" class="description" />
+                    <select class="entryDetails__projectSelect" name="" id="">
+                      <option class="entryDetails__project" value=""></option>
+                      <option class="entryDetails__newProject" value="">
+                        Create new project
+                      </option>
+                    </select>
+                    <div class="entryDetails__billable"></div>
+                    <div class="entryDetails__starttime"></div>
+                    <div class="entryDetails__endtime"></div>
+                    <div class="entryDetails__startdate"></div>
+                    <div class="entryDetails__time"></div>
+                    <div class="entryDetails__cont"></div>
+                    <div class="entryDetails__opts"></div>
+                  </div>
+                </div>
+                <div class="entry__record">
+                  <input type="text" class="description" />
+                  <select class="entryDetails__projectSelect" name="" id="">
+                    <option class="entryDetails__project" value=""></option>
+                    <option class="entryDetails__newProject" value="">
+                      Create new project
+                    </option>
+                  </select>
+                  <div class="entryDetails__billable"></div>
+                  <div class="entryDetails__starttime"></div>
+                  <div class="entryDetails__endtime"></div>
+                  <div class="entryDetails__startdate"></div>
+                  <div class="entryDetails__time"></div>
+                  <div class="entryDetails__cont"></div>
+                  <div class="entryDetails__opts"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
