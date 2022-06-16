@@ -6,11 +6,12 @@ const dynamicallyLoadScript = (url) => {
   document.head.appendChild(script);
 
   const t1 = performance.now();
-  console.log(`Script ${url} loaded in ${t1 - t0}ms.`);
+  // console.log(`Script ${url} loaded in ${t1 - t0}ms.`);
 };
 
 dynamicallyLoadScript("js/clock.js");
 dynamicallyLoadScript("js/prompt.js");
+dynamicallyLoadScript("js/display.js");
 
 document.addEventListener("DOMContentLoaded", () => {
   /** @type entryTimer */
@@ -47,8 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function click_stop_action() {
     let recorded_project = window.selected_project;
     let recorded_desc = entry_desc.value;
-    console.log(recorded_project);
-    console.log(recorded_desc);
 
     if (
       recorded_project &&
@@ -57,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
       recorded_desc != ""
     ) {
       timer.stopTimer();
-      let recorded_time = timer_current.innerHTML.split(":", 3);
+      let recorded_time = timer_current.innerHTML;
       let data = JSON.parse(localStorage.getItem("projects"));
       let exists = false;
       let i, j;
@@ -73,22 +72,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      if(exists)  {
-        data[i].records[j].times.push(recorded_time);
-      } else  {
+      if (exists) {
+        let times = {};
+        times.time_period = recorded_time;
+        times.start_time = timer_current.value;
+        data[i].records[j].times.push(times);
+      } else {
         let new_record = {};
+        new_record.times = [];
         new_record.desc = recorded_desc;
-        new_record.times = [recorded_time];
+
+        let times = {};
+        times.time_period = recorded_time;
+        times.start_time = timer_current.value;
+        new_record.times.push(times);
         data[i].records.push(new_record);
       }
       localStorage.setItem("projects", JSON.stringify(data));
 
+      timer_current.innerHTML = "00:00:00";
       timer_button.removeEventListener("click", click_stop_action);
       timer_button.addEventListener("click", click_start_action);
       timer_button.innerHTML = "Start";
       timer_button.classList.toggle("entryDetails__ctlbtn--running");
       timer_discard.removeEventListener("click", click_discard_action);
       timer_discard.classList.toggle("entryDetails__timediscard--disp");
+
+      console.log(`total time spent: ${updateDisplay()}`);
     } else {
       window.alert("Please select project and description!");
     }

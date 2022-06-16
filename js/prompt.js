@@ -90,7 +90,7 @@ function click_newProj_action() {
   newProjName.className = nameClass;
   newProjName.placeholder = namePlaceholder;
 
-  this.parentNode.insertBefore(newProjName, this.nextSibling);
+  this.parentNode.insertBefore(newProjName, this);
   this.innerHTML = "Create";
 
   this.removeEventListener("click", click_newProj_action);

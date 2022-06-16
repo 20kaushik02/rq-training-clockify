@@ -2,7 +2,6 @@ class entryTimer {
   seconds;
   minutes;
   hours;
-  running;
   start;
   time;
   elapsed;
@@ -13,7 +12,6 @@ class entryTimer {
     this.seconds = 0;
     this.minutes = 0;
     this.hours = 0;
-    this.running = false;
     this.time = 0;
     this.target = elem;
   }
@@ -40,9 +38,6 @@ class entryTimer {
 
     this.updateDisplay();
 
-    // console.log(new Date().getTime());
-    // console.log(this.start);
-    // console.log(this.time);
     //adjust for delay while setting next timeout
     let diff = new Date().getTime() - this.start - this.time;
     this.timeout = setTimeout(this.updateTime, 100 - diff);
@@ -57,8 +52,9 @@ class entryTimer {
   };
 
   startTimer = () => {
-    this.start = new Date().getTime();
+    this.start = new Date();
     this.target.value = this.start;
+    this.start = this.start.getTime();
     this.updateTime();
   };
 
