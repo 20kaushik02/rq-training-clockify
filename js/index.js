@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       timer_discard.removeEventListener("click", click_discard_action);
       timer_discard.classList.toggle("entryDetails__timediscard--disp");
 
-      setProjectsDisplay();
+      updateDisplay();
     } else {
       window.alert("Please select project and description!");
     }
@@ -124,5 +124,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   timer_button.addEventListener("click", click_start_action);
   projsel_button.addEventListener("click", click_projbtn_action);
 
-  setProjectsDisplay();
+  updateDisplay();
 });
