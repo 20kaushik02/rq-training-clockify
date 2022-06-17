@@ -5,15 +5,22 @@ const dynamicallyLoadScript = (url) => {
   script.src = url;
   document.head.appendChild(script);
 
-  const t1 = performance.now();
-  // console.log(`Script ${url} loaded in ${t1 - t0}ms.`);
+  script.onload = () => {
+    const t1 = performance.now();
+    console.log(`Script ${url} loaded in ${t1 - t0}ms.`);
+  };
 };
 
-dynamicallyLoadScript("js/clock.js");
-dynamicallyLoadScript("js/prompt.js");
-dynamicallyLoadScript("js/display.js");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  const t0 = performance.now();
+  dynamicallyLoadScript("js/clock.js");
+  dynamicallyLoadScript("js/prompt.js");
+  dynamicallyLoadScript("js/display.js");
+
+  await sleep(100); //wait for scripts to load (find a better way to do this)
+
   /** @type entryTimer */
   let timer;
   /** @type HTMLButtonElement */
@@ -98,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timer_discard.removeEventListener("click", click_discard_action);
       timer_discard.classList.toggle("entryDetails__timediscard--disp");
 
-      console.log(`total time spent: ${updateDisplay()}`);
+      setProjectsDisplay();
     } else {
       window.alert("Please select project and description!");
     }
@@ -116,4 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   timer_button.addEventListener("click", click_start_action);
   projsel_button.addEventListener("click", click_projbtn_action);
+
+  setProjectsDisplay();
 });
