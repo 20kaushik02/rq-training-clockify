@@ -1,3 +1,19 @@
+Date.prototype.addHours = function (num) {
+  let diff = num * 60 * 60 * 1000;
+  this.setTime(this.getTime() + diff);
+  return this;
+};
+Date.prototype.addMinutes = function (num) {
+  let diff = num * 60 * 1000;
+  this.setTime(this.getTime() + diff);
+  return this;
+};
+Date.prototype.addSeconds = function (num) {
+  let diff = num * 1000;
+  this.setTime(this.getTime() + diff);
+  return this;
+};
+
 function addTimes(t1, t2) {
   let t_s = new Array(3);
   let t1_s = t1.split(":");
@@ -21,24 +37,14 @@ function clearProjectsDisplay() {
   let projects = document.getElementsByClassName("projects")[0];
   let root = document.getElementById("root");
 
-  root.removeChild(projects);
+  if (projects) {
+    root.removeChild(projects);
+  }
 }
 
 function setProjectsDisplay() {
   clearProjectsDisplay();
 
-  Date.prototype.addHours = function (num) {
-    this.setTime(this.getTime() + num * 60 * 60 * 1000);
-    return this;
-  };
-  Date.prototype.addMinutes = function (num) {
-    this.setTime(this.getTime() + num * 60 * 1000);
-    return this;
-  };
-  Date.prototype.addSeconds = function (num) {
-    this.setTime(this.getTime() + num * 1000);
-    return this;
-  };
 
   const projects = JSON.parse(localStorage.getItem("projects") || "[]");
 
@@ -60,7 +66,7 @@ function setProjectsDisplay() {
 
     let projectNameH3 = document.createElement("h3");
     projectNameH3.className = "project__name";
-    projectNameH3.innerHTML = project.name;
+    projectNameH3.innerHTML = `Project name: ${project.name}`;
 
     let project_time = "00:00:00";
 
@@ -69,6 +75,14 @@ function setProjectsDisplay() {
 
     for (const record of project.records) {
       for (const time of record.times) {
+        let start_time_obj = new Date(time.start_time);
+        let times = time.time_period.split(":");
+        let end_time_obj = new Date(start_time_obj);
+        end_time_obj = end_time_obj
+          .addHours(Number(times[0]))
+          .addMinutes(Number(times[1]))
+          .addSeconds(Number(times[2]));
+
         let projectRecordLi = document.createElement("li");
         projectRecordLi.className = "project__record";
 
@@ -77,47 +91,38 @@ function setProjectsDisplay() {
         recordDescInput.value = record.desc;
         recordDescInput.className = "record__desc";
 
-        let recordStartDateP = document.createElement("p");
+        let recordStartDateP = document.createElement("input");
+        recordStartDateP.type = "date";
+        recordStartDateP.valueAsDate = start_time_obj;
         recordStartDateP.className = "record__startDate";
 
-        let recordStartTimeP = document.createElement("p");
-        recordStartTimeP.className = "record__startTime";
-
-        let recordEndTimeP = document.createElement("p");
-        recordEndTimeP.className = "record__endTime";
-
-        let recordTimeP = document.createElement("p");
-        recordTimeP.className = "record__time";
-
-        let start_time_obj = new Date(time.start_time);
-        recordStartDateP.innerHTML =
-          zeroPadforTens(start_time_obj.getDate()) +
-          "-" +
-          zeroPadforTens(start_time_obj.getMonth()) +
-          "-" +
-          zeroPadforTens(start_time_obj.getFullYear());
-
-        recordStartTimeP.innerHTML =
+        let recordStartTimeP = document.createElement("input");
+        recordStartTimeP.type = "time";
+        recordStartTimeP.step = 1;
+        recordStartTimeP.value =
           zeroPadforTens(start_time_obj.getHours()) +
           ":" +
           zeroPadforTens(start_time_obj.getMinutes()) +
           ":" +
           zeroPadforTens(start_time_obj.getSeconds());
+        recordStartTimeP.className = "record__startTime";
 
-        let times = time.time_period.split(":");
-        let end_time_obj = start_time_obj
-          .addSeconds(times[2])
-          .addMinutes(times[1])
-          .addHours(times[0]);
-
-        recordEndTimeP.innerHTML =
+        let recordEndTimeP = document.createElement("input");
+        recordEndTimeP.type = "time";
+        recordEndTimeP.step = 1;
+        recordEndTimeP.value =
           zeroPadforTens(end_time_obj.getHours()) +
           ":" +
           zeroPadforTens(end_time_obj.getMinutes()) +
           ":" +
           zeroPadforTens(end_time_obj.getSeconds());
+        recordEndTimeP.className = "record__endTime";
 
-        recordTimeP.innerHTML = time.time_period;
+        let recordTimeP = document.createElement("input");
+        recordTimeP.type = "time";
+        recordTimeP.step = 1;
+        recordTimeP.value = time.time_period;
+        recordTimeP.className = "record__time";
 
         projectRecordLi.appendChild(recordDescInput);
         projectRecordLi.appendChild(recordStartDateP);
@@ -133,7 +138,7 @@ function setProjectsDisplay() {
 
     let projectTimeH3 = document.createElement("h3");
     projectTimeH3.className = "project__time";
-    projectTimeH3.innerHTML = project_time;
+    projectTimeH3.innerHTML = `Total time: ${project_time}`;
 
     projectHeaderDiv.appendChild(projectNameH3);
     projectHeaderDiv.appendChild(projectTimeH3);
