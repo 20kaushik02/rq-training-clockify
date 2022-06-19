@@ -97,23 +97,35 @@ function updateDisplay() {
         recordDescInput.className = "record__desc";
         recordDescInput.addEventListener("change", change_desc_action);
 
-        let recordStartDateP = document.createElement("input");
-        recordStartDateP.type = "date";
-        recordStartDateP.valueAsDate = start_time_obj;
-        recordStartDateP.className = "record__startDate";
-        recordStartDateP.addEventListener("change", change_startDate_action);
+        let recordStartDateInput = document.createElement("input");
+        recordStartDateInput.type = "text";
+        recordStartDateInput.value =
+          zeroPadforTens(start_time_obj.getFullYear()) +
+          "/" +
+          zeroPadforTens(start_time_obj.getMonth() + 1) +
+          "/" +
+          zeroPadforTens(start_time_obj.getDate());
+        recordStartDateInput.data = recordStartDateInput.value;
+        recordStartDateInput.className = "record__startDate";
+        recordStartDateInput.addEventListener(
+          "change",
+          change_startDate_action
+        );
 
-        let recordStartTimeP = document.createElement("input");
-        recordStartTimeP.type = "time";
-        recordStartTimeP.step = 1;
-        recordStartTimeP.value =
+        let recordStartTimeInput = document.createElement("input");
+        recordStartTimeInput.type = "text";
+        recordStartTimeInput.value =
           zeroPadforTens(start_time_obj.getHours()) +
           ":" +
           zeroPadforTens(start_time_obj.getMinutes()) +
           ":" +
           zeroPadforTens(start_time_obj.getSeconds());
-        recordStartTimeP.className = "record__startTime";
-        recordStartTimeP.addEventListener("change", change_startTime_action);
+        recordStartTimeInput.data = recordStartTimeInput.value;
+        recordStartTimeInput.className = "record__startTime";
+        recordStartTimeInput.addEventListener(
+          "change",
+          change_startTime_inline_action
+        );
 
         let recordEndTimeP = document.createElement("input");
         recordEndTimeP.type = "time";
@@ -141,8 +153,8 @@ function updateDisplay() {
         recordDeleteImg.addEventListener("click", click_delete_action);
 
         projectRecordLi.appendChild(recordDescInput);
-        projectRecordLi.appendChild(recordStartDateP);
-        projectRecordLi.appendChild(recordStartTimeP);
+        projectRecordLi.appendChild(recordStartDateInput);
+        projectRecordLi.appendChild(recordStartTimeInput);
         projectRecordLi.appendChild(recordEndTimeP);
         projectRecordLi.appendChild(recordTimeP);
         projectRecordLi.appendChild(recordDeleteImg);
@@ -168,7 +180,64 @@ function updateDisplay() {
 }
 
 function zeroPadforTens(val) {
-  return val > 9 ? `${val}` : `0${val}`;
+  return Number(val) > 9 ? `${Number(val)}` : `0${Number(val)}`;
+}
+
+function change_startDate_action() {
+  const validationResult = validateYYYYMMDDDateString(this.value);
+  if (validationResult.status) {
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+
+    let start_time_obj = new Date(
+      projects[proj].records[rec].times[time].start_time
+    );
+
+    start_time_obj.setDate(Number(validationResult.date));
+    start_time_obj.setMonth(Number(validationResult.month - 1));
+    start_time_obj.setFullYear(Number(validationResult.year));
+
+    projects[proj].records[rec].times[time].start_time =
+      start_time_obj.toISOString();
+
+    this.data = this.value;
+    localStorage.setItem("projects", JSON.stringify(projects));
+  } else {
+    this.value = this.data;
+  }
+
+  updateDisplay();
+}
+
+function change_startTime_inline_action() {
+  const validationResult = validateHHMMSSTimeString(this.value);
+  if (validationResult.status) {
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+
+    let start_time_obj = new Date(
+      projects[proj].records[rec].times[time].start_time
+    );
+
+    let time_period_string =
+      projects[proj].records[rec].times[time].time_period;
+
+    start_time_obj.setHours(validationResult.hours);
+    start_time_obj.setMinutes(validationResult.minutes);
+    start_time_obj.setSeconds(validationResult.seconds);
+
+    projects[proj].records[rec].times[time].start_time =
+      start_time_obj.toISOString();    
+
+    this.data = this.value;
+    localStorage.setItem("projects", JSON.stringify(projects));
+  } else {
+    this.value = this.data;
+  }
+
+  updateDisplay();
 }
 
 function change_desc_action() {
@@ -191,27 +260,6 @@ function change_timePeriod_action() {
   let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
 
   projects[proj].records[rec].times[time].time_period = this.value.toString();
-
-  localStorage.setItem("projects", JSON.stringify(projects));
-
-  updateDisplay();
-}
-
-function change_startDate_action() {
-  let projects = JSON.parse(localStorage.getItem("projects") || "[]");
-
-  let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
-
-  let start_time_obj = new Date(
-    projects[proj].records[rec].times[time].start_time
-  );
-
-  start_time_obj.setDate(this.valueAsDate.getDate());
-  start_time_obj.setMonth(this.valueAsDate.getMonth());
-  start_time_obj.setFullYear(this.valueAsDate.getFullYear());
-
-  projects[proj].records[rec].times[time].start_time =
-    start_time_obj.toISOString();
 
   localStorage.setItem("projects", JSON.stringify(projects));
 
@@ -279,8 +327,6 @@ function click_delete_action() {
 
   let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
 
-  console.log(proj, rec, time);
-
   projects[proj].records[rec].times.splice(time, 1);
 
   localStorage.setItem("projects", JSON.stringify(projects));
@@ -314,3 +360,29 @@ function cleanProjects() {
 
   localStorage.setItem("projects", JSON.stringify(projects));
 }
+
+const validateYYYYMMDDDateString = (dateString) => {
+  const [year, month, date] = dateString.split("/");
+  if (!year || !month || !date) {
+    return { status: false };
+  }
+  return {
+    status: true,
+    year: zeroPadforTens(year),
+    month: zeroPadforTens(month),
+    date: zeroPadforTens(date),
+  };
+};
+
+const validateHHMMSSTimeString = (timeString) => {
+  const [hours, minutes, seconds] = timeString.split(":");
+  if (!hours || !minutes || !seconds) {
+    return { status: false };
+  }
+  return {
+    status: true,
+    hours: zeroPadforTens(hours),
+    minutes: zeroPadforTens(minutes),
+    seconds: zeroPadforTens(seconds),
+  };
+};

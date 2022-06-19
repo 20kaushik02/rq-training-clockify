@@ -26,7 +26,7 @@ class entryTimer {
     return this.hours;
   }
 
-  updateTime = () => {
+  progressTimer = () => {
     this.time += 100;
     this.elapsed = Math.floor(this.time / 100) / 10;
     if (Math.round(this.elapsed) == this.elapsed) {
@@ -40,7 +40,7 @@ class entryTimer {
 
     //adjust for delay while setting next timeout
     let diff = new Date().getTime() - this.start - this.time;
-    this.timeout = setTimeout(this.updateTime, 100 - diff);
+    this.timeout = setTimeout(this.progressTimer, 100 - diff);
   };
 
   updateDisplay = () => {
@@ -55,7 +55,7 @@ class entryTimer {
     this.start = new Date();
     this.target.value = this.start;
     this.start = this.start.getTime();
-    this.updateTime();
+    this.progressTimer();
   };
 
   stopTimer = () => {

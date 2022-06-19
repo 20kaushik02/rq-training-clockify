@@ -80,19 +80,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (exists) {
-        let times = {};
-        times.time_period = recorded_time;
-        times.start_time = timer_current.value;
-        data[i].records[j].times.push(times);
+        let time = {};
+        time.time_period = recorded_time;
+        time.start_time = timer_current.value;
+        data[i].records[j].times.push(time);
       } else {
         let new_record = {};
         new_record.times = [];
         new_record.desc = recorded_desc;
 
-        let times = {};
-        times.time_period = recorded_time;
-        times.start_time = timer_current.value;
-        new_record.times.push(times);
+        let time = {};
+        time.time_period = recorded_time;
+        time.start_time = timer_current.value;
+        new_record.times.push(time);
         data[i].records.push(new_record);
       }
       localStorage.setItem("projects", JSON.stringify(data));

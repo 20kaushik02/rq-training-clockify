@@ -213,6 +213,11 @@ body {
   justify-content: space-evenly;
   align-items: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: 0.3s all ease-in-out;
+}
+
+.project__record:hover {
+  transform: scale(1.01);
 }
 
 .project__record:last-child {
@@ -223,42 +228,37 @@ body {
   border-top: 3px solid rgba(0, 0, 0, 0.1);
 }
 
-.record__desc {
+.record__desc,
+.record__startDate,
+.record__startTime {
   box-sizing: border-box;
   padding: 1rem;
+  margin: 0 1rem;
   border: 1px solid transparent;
   outline: none;
-  transition: 0.3s all ease-in-out;
-  flex-grow: 1.5;
-  margin: auto;
+  flex-grow: 1;
+  font-size: 1rem;
 }
 
-.record__desc:active,
-.record__desc:hover {
+.project__record:hover > .record__desc,
+.project__record:hover > .record__startDate,
+.project__record:hover > .record__startDate__inline,
+.project__record:hover > .record__startTime,
+.project__record:hover > .record__endTime,
+.project__record:hover > .record__time {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.record__startDate,
-.record__startTime,
 .record__endTime,
-.record__time,
-.record__startDate:active,
-.record__startTime:active,
-.record__endTime:active,
-.record__time:active,
-.record__startDate:focus,
-.record__startTime:focus,
-.record__endTime:focus,
-.record__time:focus,
-.record__startDate:hover,
-.record__startTime:hover,
-.record__endTime:hover,
-.record__time:hover {
+.record__time {
+  box-sizing: border-box;
+  padding: 1rem;
+  margin: 0 1rem;
+  border: 1px solid transparent;
   outline: none;
-  border: none;
   flex-grow: 1;
   font-size: 1rem;
-  text-align: right;
+  text-align: center;
   justify-content: center;
   align-items: center;
 }
