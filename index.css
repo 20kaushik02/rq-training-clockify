@@ -198,16 +198,21 @@ body {
 }
 
 .project__records {
+  box-sizing: border-box;
   width: 100%;
   list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 0;
   margin: 0;
 }
 
 .project__record {
-  width: 100%;
-  padding: 5px 1rem;
   box-sizing: border-box;
+  width: 100%;
+  padding: 5px 2rem;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -217,7 +222,7 @@ body {
 }
 
 .project__record:hover {
-  transform: scale(1.01);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .project__record:last-child {
@@ -230,25 +235,7 @@ body {
 
 .record__desc,
 .record__startDate,
-.record__startTime {
-  box-sizing: border-box;
-  padding: 1rem;
-  margin: 0 1rem;
-  border: 1px solid transparent;
-  outline: none;
-  flex-grow: 1;
-  font-size: 1rem;
-}
-
-.project__record:hover > .record__desc,
-.project__record:hover > .record__startDate,
-.project__record:hover > .record__startDate__inline,
-.project__record:hover > .record__startTime,
-.project__record:hover > .record__endTime,
-.project__record:hover > .record__time {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
+.record__startTime,
 .record__endTime,
 .record__time {
   box-sizing: border-box;
@@ -258,9 +245,19 @@ body {
   outline: none;
   flex-grow: 1;
   font-size: 1rem;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
+  transition: 0.3s all ease-in-out;
+}
+
+.record__startTime {
+  text-align: right;
+}
+
+.project__record:hover > .record__desc,
+.project__record:hover > .record__startDate,
+.project__record:hover > .record__startTime,
+.project__record:hover > .record__endTime,
+.project__record:hover > .record__time {
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Desktop only */

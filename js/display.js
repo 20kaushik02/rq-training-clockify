@@ -14,7 +14,15 @@ Date.prototype.addSeconds = function (num) {
   return this;
 };
 
-function addTimePeriods(t1, t2) {
+const wrapNegativeMod = (n, m) => {
+  return ((n % m) + m) % m;
+};
+
+const zeroPadforTens = (val) => {
+  return Number(val) > 9 ? `${Number(val)}` : `0${Number(val)}`;
+};
+
+const addDelimitedTimePeriodStrings = (t1, t2) => {
   let t_s = new Array(3);
   let t1_s = t1.split(":");
   let t2_s = t2.split(":");
@@ -31,16 +39,83 @@ function addTimePeriods(t1, t2) {
   t_s[2] = zeroPadforTens(t_s[2]);
 
   return t_s.join(":");
-}
+};
 
-function clearProjectsDisplay() {
+const subtractDelimitedTimePeriodStrings = (t1, t2) => {
+  let t_s = new Array(3);
+  const t1_s = t1.split(":");
+  const t2_s = t2.split(":");
+
+  t_s[2] = wrapNegativeMod(Number(t1_s[2]) - Number(t2_s[2]), 60);
+  t_s[1] = wrapNegativeMod(
+    Number(t1_s[1]) - Number(t2_s[1]) + (t1_s[2] >= t2_s[2] ? 0 : -1),
+    60
+  );
+  t_s[0] = wrapNegativeMod(
+    Number(t1_s[0]) - Number(t2_s[0]) + (t1_s[1] >= t2_s[1] ? 0 : -1),
+    24
+  );
+
+  t_s[0] = zeroPadforTens(t_s[0]);
+  t_s[1] = zeroPadforTens(t_s[1]);
+  t_s[2] = zeroPadforTens(t_s[2]);
+
+  return t_s.join(":");
+};
+
+const clearProjectsDisplay = () => {
   let projects = document.getElementsByClassName("projects")[0];
   let root = document.getElementById("root");
 
   if (projects) {
     root.removeChild(projects);
   }
-}
+};
+
+const validateYYYYMMDDDateString = (dateString) => {
+  const [year, month, date] = dateString.split("/");
+  if (
+    !year ||
+    Number(year) < 0 ||
+    !month ||
+    Number(month) < 1 ||
+    Number(month) > 12 ||
+    !date ||
+    Number(date) < 1 ||
+    Number(date) > 31
+  ) {
+    return { status: false };
+  }
+  return {
+    status: true,
+    year: zeroPadforTens(year),
+    month: zeroPadforTens(month),
+    date: zeroPadforTens(date),
+  };
+};
+
+const validateHHMMSSTimeString = (timeString) => {
+  const [hours, minutes, seconds] = timeString.split(":");
+  if (
+    !hours ||
+    Number(hours) < 0 ||
+    Number(hours) > 23 ||
+    !minutes ||
+    Number(minutes) < 0 ||
+    Number(minutes) > 59 ||
+    !seconds ||
+    Number(seconds) < 0 ||
+    Number(seconds) > 59
+  ) {
+    return { status: false };
+  }
+  return {
+    status: true,
+    hours: zeroPadforTens(hours),
+    minutes: zeroPadforTens(minutes),
+    seconds: zeroPadforTens(seconds),
+  };
+};
 
 function updateDisplay() {
   clearProjectsDisplay();
@@ -86,19 +161,22 @@ function updateDisplay() {
 
         let projectRecordLi = document.createElement("li");
         projectRecordLi.classList.add("project__record");
+        projectRecordLi.id = `${projectRecordLi.className}-${i}_${j}_${k}`;
         if (j != 0 && k == 0) {
           projectRecordLi.classList.add("project__record--divider");
         }
-        projectRecordLi.id = `${projectRecordLi.className}-${i}_${j}_${k}`;
 
         let recordDescInput = document.createElement("input");
         recordDescInput.type = "text";
+        recordDescInput.placeholder = "Add a description";
         recordDescInput.value = record.desc;
+        recordDescInput.data = recordDescInput.value;
         recordDescInput.className = "record__desc";
         recordDescInput.addEventListener("change", change_desc_action);
 
         let recordStartDateInput = document.createElement("input");
         recordStartDateInput.type = "text";
+        recordStartDateInput.placeholder = "Start date (YYYY/MM/DD)";
         recordStartDateInput.value =
           zeroPadforTens(start_time_obj.getFullYear()) +
           "/" +
@@ -114,6 +192,7 @@ function updateDisplay() {
 
         let recordStartTimeInput = document.createElement("input");
         recordStartTimeInput.type = "text";
+        recordStartTimeInput.placeholder = "Start time (HH:MM:SS)";
         recordStartTimeInput.value =
           zeroPadforTens(start_time_obj.getHours()) +
           ":" +
@@ -124,26 +203,32 @@ function updateDisplay() {
         recordStartTimeInput.className = "record__startTime";
         recordStartTimeInput.addEventListener(
           "change",
-          change_startTime_inline_action
+          change_startTime_action
         );
 
-        let recordEndTimeP = document.createElement("input");
-        recordEndTimeP.type = "time";
-        recordEndTimeP.step = 1;
-        recordEndTimeP.value =
+        let recordTimeDash = document.createElement("p");
+        recordTimeDash.innerHTML = "-";
+
+        let recordEndTimeInput = document.createElement("input");
+        recordEndTimeInput.type = "text";
+        recordEndTimeInput.placeholder = "End time (HH:MM:SS)";
+        recordEndTimeInput.value =
           zeroPadforTens(end_time_obj.getHours()) +
           ":" +
           zeroPadforTens(end_time_obj.getMinutes()) +
           ":" +
           zeroPadforTens(end_time_obj.getSeconds());
-        recordEndTimeP.className = "record__endTime";
+        recordEndTimeInput.data = recordEndTimeInput.value;
+        recordEndTimeInput.className = "record__endTime";
+        recordEndTimeInput.addEventListener("change", change_endTime_action);
 
-        let recordTimeP = document.createElement("input");
-        recordTimeP.type = "time";
-        recordTimeP.step = 1;
-        recordTimeP.value = time.time_period;
-        recordTimeP.className = "record__time";
-        recordTimeP.addEventListener("change", change_timePeriod_action);
+        let recordTimeInput = document.createElement("input");
+        recordTimeInput.type = "text";
+        recordTimeInput.placeholder = "Duration (HH:MM:SS)";
+        recordTimeInput.value = time.time_period;
+        recordTimeInput.data = recordTimeInput.value;
+        recordTimeInput.className = "record__time";
+        recordTimeInput.addEventListener("change", change_timePeriod_action);
 
         let recordDeleteImg = document.createElement("img");
         recordDeleteImg.src = "icons/close.svg";
@@ -155,13 +240,17 @@ function updateDisplay() {
         projectRecordLi.appendChild(recordDescInput);
         projectRecordLi.appendChild(recordStartDateInput);
         projectRecordLi.appendChild(recordStartTimeInput);
-        projectRecordLi.appendChild(recordEndTimeP);
-        projectRecordLi.appendChild(recordTimeP);
+        projectRecordLi.appendChild(recordTimeDash);
+        projectRecordLi.appendChild(recordEndTimeInput);
+        projectRecordLi.appendChild(recordTimeInput);
         projectRecordLi.appendChild(recordDeleteImg);
 
         projectRecordsUl.appendChild(projectRecordLi);
 
-        project_time = addTimePeriods(project_time, time.time_period);
+        project_time = addDelimitedTimePeriodStrings(
+          project_time,
+          time.time_period
+        );
       }
     }
 
@@ -179,16 +268,32 @@ function updateDisplay() {
   }
 }
 
-function zeroPadforTens(val) {
-  return Number(val) > 9 ? `${Number(val)}` : `0${Number(val)}`;
+function change_desc_action() {
+  if (this.value != "") {
+    this.data = this.value;
+
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+
+    projects[proj].records[rec].desc = this.value;
+
+    localStorage.setItem("projects", JSON.stringify(projects));
+
+    updateDisplay();
+  } else {
+    this.value = this.data;
+  }
 }
 
 function change_startDate_action() {
   const validationResult = validateYYYYMMDDDateString(this.value);
   if (validationResult.status) {
-    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+    this.data = this.value;
 
     let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
 
     let start_time_obj = new Date(
       projects[proj].records[rec].times[time].start_time
@@ -201,123 +306,97 @@ function change_startDate_action() {
     projects[proj].records[rec].times[time].start_time =
       start_time_obj.toISOString();
 
-    this.data = this.value;
     localStorage.setItem("projects", JSON.stringify(projects));
   } else {
     this.value = this.data;
   }
-
-  updateDisplay();
-}
-
-function change_startTime_inline_action() {
-  const validationResult = validateHHMMSSTimeString(this.value);
-  if (validationResult.status) {
-    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
-
-    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
-
-    let start_time_obj = new Date(
-      projects[proj].records[rec].times[time].start_time
-    );
-
-    let time_period_string =
-      projects[proj].records[rec].times[time].time_period;
-
-    start_time_obj.setHours(validationResult.hours);
-    start_time_obj.setMinutes(validationResult.minutes);
-    start_time_obj.setSeconds(validationResult.seconds);
-
-    projects[proj].records[rec].times[time].start_time =
-      start_time_obj.toISOString();    
-
-    this.data = this.value;
-    localStorage.setItem("projects", JSON.stringify(projects));
-  } else {
-    this.value = this.data;
-  }
-
-  updateDisplay();
-}
-
-function change_desc_action() {
-  let projects = JSON.parse(localStorage.getItem("projects") || "[]");
-
-  let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
-
-  if (this.value != "") {
-    projects[proj].records[rec].desc = this.value;
-  }
-
-  localStorage.setItem("projects", JSON.stringify(projects));
-
-  updateDisplay();
-}
-
-function change_timePeriod_action() {
-  let projects = JSON.parse(localStorage.getItem("projects") || "[]");
-
-  let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
-
-  projects[proj].records[rec].times[time].time_period = this.value.toString();
-
-  localStorage.setItem("projects", JSON.stringify(projects));
 
   updateDisplay();
 }
 
 function change_startTime_action() {
-  let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+  const validationResult = validateHHMMSSTimeString(this.value);
+  if (validationResult.status) {
+    this.data = this.value;
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
 
-  let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
 
-  let start_time_obj = new Date(
-    projects[proj].records[rec].times[time].start_time
-  );
+    let start_time_obj = new Date(
+      projects[proj].records[rec].times[time].start_time
+    );
 
-  start_time_obj.setHours(
-    this.valueAsDate.getHours() + this.valueAsDate.getTimezoneOffset() / 60
-  );
-  start_time_obj.setMinutes(
-    this.valueAsDate.getMinutes() +
-      (this.valueAsDate.getTimezoneOffset() < 0
-        ? -(this.valueAsDate.getTimezoneOffset() % 60)
-        : this.valueAsDate.getTimezoneOffset() % 60)
-  );
-  start_time_obj.setSeconds(this.valueAsDate.getSeconds());
+    start_time_obj.setHours(validationResult.hours);
+    start_time_obj.setMinutes(validationResult.minutes);
+    start_time_obj.setSeconds(validationResult.seconds);
 
-  projects[proj].records[rec].times[time].start_time =
-    start_time_obj.toISOString();
+    let end_time_elem = document.querySelector(
+      `#${this.parentNode.id} > .record__endTime`
+    );
 
-  localStorage.setItem("projects", JSON.stringify(projects));
+    let updated_time_period = subtractDelimitedTimePeriodStrings(
+      end_time_elem.value,
+      this.value
+    );
+
+    projects[proj].records[rec].times[time].start_time =
+      start_time_obj.toISOString();
+
+    projects[proj].records[rec].times[time].time_period = updated_time_period;
+
+    localStorage.setItem("projects", JSON.stringify(projects));
+  } else {
+    this.value = this.data;
+  }
 
   updateDisplay();
 }
 
 function change_endTime_action() {
-  let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+  const validationResult = validateHHMMSSTimeString(this.value);
+  if (validationResult.status) {
+    this.data = this.value;
 
-  let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
 
-  let start_time_obj = new Date(
-    projects[proj].records[rec].times[time].start_time
-  );
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
 
-  start_time_obj.setHours(
-    this.valueAsDate.getHours() + this.valueAsDate.getTimezoneOffset() / 60
-  );
-  start_time_obj.setMinutes(
-    this.valueAsDate.getMinutes() +
-      (this.valueAsDate.getTimezoneOffset() < 0
-        ? -(this.valueAsDate.getTimezoneOffset() % 60)
-        : this.valueAsDate.getTimezoneOffset() % 60)
-  );
-  start_time_obj.setSeconds(this.valueAsDate.getSeconds());
+    let start_time_elem = document.querySelector(
+      `#${this.parentNode.id} > .record__startTime`
+    );
 
-  projects[proj].records[rec].times[time].start_time =
-    start_time_obj.toISOString();
+    let updated_time_period = subtractDelimitedTimePeriodStrings(
+      this.value,
+      start_time_elem.value
+    );
 
-  localStorage.setItem("projects", JSON.stringify(projects));
+    projects[proj].records[rec].times[time].time_period = updated_time_period;
+
+    localStorage.setItem("projects", JSON.stringify(projects));
+  } else {
+    this.value = this.data;
+  }
+
+  updateDisplay();
+}
+
+function change_timePeriod_action() {
+  const validationResult = validateHHMMSSTimeString(this.value);
+  if (validationResult.status) {
+    this.data = this.value;
+
+    let [proj, rec, time] = this.parentNode.id.slice(16).split("_");
+
+    let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+
+    projects[proj].records[rec].times[
+      time
+    ].time_period = `${validationResult.hours}:${validationResult.minutes}:${validationResult.seconds}`;
+
+    localStorage.setItem("projects", JSON.stringify(projects));
+  } else {
+    this.value = this.data;
+  }
 
   updateDisplay();
 }
@@ -360,29 +439,3 @@ function cleanProjects() {
 
   localStorage.setItem("projects", JSON.stringify(projects));
 }
-
-const validateYYYYMMDDDateString = (dateString) => {
-  const [year, month, date] = dateString.split("/");
-  if (!year || !month || !date) {
-    return { status: false };
-  }
-  return {
-    status: true,
-    year: zeroPadforTens(year),
-    month: zeroPadforTens(month),
-    date: zeroPadforTens(date),
-  };
-};
-
-const validateHHMMSSTimeString = (timeString) => {
-  const [hours, minutes, seconds] = timeString.split(":");
-  if (!hours || !minutes || !seconds) {
-    return { status: false };
-  }
-  return {
-    status: true,
-    hours: zeroPadforTens(hours),
-    minutes: zeroPadforTens(minutes),
-    seconds: zeroPadforTens(seconds),
-  };
-};
